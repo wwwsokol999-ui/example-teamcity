@@ -1,0 +1,43 @@
+---
+- name: Install Nexus Repository on the lab VM
+  hosts: localhost
+  connection: local
+  become: true
+  vars:
+    nexus_image: sonatype/nexus3:3.98.3
+  tasks:
+    - name: Enable Docker
+      ansible.builtin.systemd_service:
+        name: docker
+        enabled: true
+        state: started
+    - name: Check if Nexus already exists
+      ansible.builtin.command: docker container inspect nexus
+      register: nexus_container
+      changed_when: false
+      failed_when: nexus_container.rc not in [0, 1]
+    - name: Create Nexus container and persistent volume
+      ansible.builtin.command:
+        argv:
+          - docker
+          - run
+          - --detach
+          - --name=nexus
+          - --restart=unless-stopped
+          - --publish=8081:8081
+          - --volume=nexus-data:/nexus-data
+          - --env
+          - INSTALL4J_ADD_VM_PARAMS=-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=512m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
+          - "{{ nexus_image }}"
+      when: nexus_container.rc == 1
+    - name: Ensure Nexus container is running
+      ansible.builtin.command: docker container start nexus
+      changed_when: false
+    - name: Wait for the Nexus HTTP health check
+      ansible.builtin.uri:
+        url: http://127.0.0.1:8081/service/rest/v1/status
+        status_code: 200
+      register: nexus_ready
+      until: nexus_ready.status == 200
+      retries: 100
+      delay: 6
