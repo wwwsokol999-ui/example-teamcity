@@ -12,15 +12,19 @@
 
 На сервере проверен Docker Engine 29.1.3 и установлен Docker Compose 2.40.3. Контейнер `jetbrains/teamcity-server:2026.2.2` запущен. Страница первичной настройки `/mnt` ответила HTTP 200.
 
-На ВМ агента `cloud-init` скачал `jetbrains/teamcity-agent:2026.2.2` и запустил контейнер с переменной `SERVER_URL`. Подключение агента к серверу и его авторизация ожидают завершения настройки сервера.
+На ВМ агента `cloud-init` скачал `jetbrains/teamcity-agent:2026.2.2` и запустил контейнер с переменной `SERVER_URL`. Агент `netology-agent` подключён к TeamCity по внутренней сети, авторизован и добавлен в пул `Default`.
 
 На ВМ Nexus выполнен [адаптированный Ansible playbook](infrastructure/nexus/site.yml). Он запускает `sonatype/nexus3:3.98.3` и проверяет HTTP 200 на локальном `/service/rest/v1/status`. Журнал последовательного порта подтвердил старт контейнера и завершение `cloud-init` без ошибки. Исходный playbook из задания рассчитан на CentOS и OpenJDK 8.
 
 [Исходный репозиторий задания](https://github.com/aragastmatb/example-teamcity)
 
+## TeamCity и первая сборка
+
+TeamCity инициализирован со встроенной базой HSQLDB. Проект `Example Teamcity` создан из форка. Автоопределение нашло Maven и `pom.xml`, шаг сохранён с целями `clean test`. Сборка №1 на `master` запустилась на `netology-agent` и завершилась со статусом `Success`: прошли 5 тестов.
+
 ## Проверки в работе
 
-Первичная настройка TeamCity, авторизация агента, настройка доступа Maven к Nexus, сборки `master` и `feature/add_reply`, публикация JAR и проверка конфигурации в Git.
+Настройка доступа Maven к Nexus, сборки с разделением целей по веткам, публикация JAR и проверка конфигурации в Git.
 
 ## Скриншоты
 
@@ -32,3 +36,8 @@
 Запущенный контейнер TeamCity Server.
 
 <img width="1310" height="38" alt="clipboard" src="https://github.com/user-attachments/assets/37ea2b1e-a51f-47f8-8293-11fe9cd867b8" />
+
+
+Первая успешная сборка `master` на `netology-agent`.
+
+<img width="780" height="270" alt="clipboard" src="https://github.com/user-attachments/assets/d849c3d0-2544-44a0-9eed-cfffb67336bf" />
