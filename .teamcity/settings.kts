@@ -1,0 +1,86 @@
+import jetbrains.buildServer.configs.kotlin.*
+import jetbrains.buildServer.configs.kotlin.buildSteps.maven
+import jetbrains.buildServer.configs.kotlin.triggers.vcs
+import jetbrains.buildServer.configs.kotlin.vcs.GitVcsRoot
+
+/*
+The settings script is an entry point for defining a TeamCity
+project hierarchy. The script should contain a single call to the
+project() function with a Project instance or an init function as
+an argument.
+
+VcsRoots, BuildTypes, Templates, and subprojects can be
+registered inside the project using the vcsRoot(), buildType(),
+template(), and subProject() methods respectively.
+
+To debug settings scripts in command-line, run the
+
+    mvnDebug org.jetbrains.teamcity:teamcity-configs-maven-plugin:generate
+
+command and attach your debugger to the port 8000.
+
+To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
+-> Tool Windows -> Maven Projects), find the generate task node
+(Plugins -> teamcity-configs -> teamcity-configs:generate), the
+'Debug' option is available in the context menu for the task.
+*/
+
+version = "2026.2"
+
+project {
+
+    vcsRoot(HttpsGithubComWwwsokol999uiExampleTeamcityGitRefsHeadsMaster)
+
+    buildType(Build)
+}
+
+object Build : BuildType({
+    name = "Build"
+
+    params {
+        param("env.NEXUS_BASE_URL", "http://10.131.0.12:8081")
+        // Configure this secure parameter on the TeamCity project before importing the DSL.
+        password("env.NEXUS_PASSWORD", "%nexus.publisher.password%")
+        param("env.NEXUS_USERNAME", "teamcity-publisher")
+    }
+
+    vcs {
+        root(HttpsGithubComWwwsokol999uiExampleTeamcityGitRefsHeadsMaster)
+    }
+
+    steps {
+        maven {
+            name = "Maven test — feature branches"
+            id = "Maven2"
+
+            conditions {
+                equals("teamcity.build.branch.is_default", "false")
+            }
+            goals = "clean test"
+        }
+        maven {
+            name = "Maven deploy — master"
+            id = "Maven2_1"
+
+            conditions {
+                equals("teamcity.build.branch.is_default", "true")
+            }
+            goals = "clean deploy"
+            runnerArgs = "-Dnexus.baseUrl=%env.NEXUS_BASE_URL%"
+            userSettingsSelection = "userSettingsSelection:byPath"
+            userSettingsPath = "%teamcity.build.checkoutDir%/ci/settings.xml"
+        }
+    }
+
+    triggers {
+        vcs {
+        }
+    }
+})
+
+object HttpsGithubComWwwsokol999uiExampleTeamcityGitRefsHeadsMaster : GitVcsRoot({
+    name = "https://github.com/wwwsokol999-ui/example-teamcity.git#refs/heads/master"
+    url = "https://github.com/wwwsokol999-ui/example-teamcity.git"
+    branch = "refs/heads/master"
+    branchSpec = "+:refs/heads/*"
+})
