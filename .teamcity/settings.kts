@@ -36,6 +36,7 @@ project {
 
 object Build : BuildType({
     name = "Build"
+    artifactRules = "target/plaindoll-*.jar"
 
     params {
         param("env.NEXUS_BASE_URL", "http://10.131.0.12:8081")
