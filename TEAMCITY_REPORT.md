@@ -12,13 +12,15 @@
 
 На сервере проверен Docker Engine 29.1.3 и установлен Docker Compose 2.40.3. Контейнер `jetbrains/teamcity-server:2026.2.2` запущен. Страница первичной настройки `/mnt` ответила HTTP 200.
 
-Для отдельной ВМ агента задан официальный образ `jetbrains/teamcity-agent:2026.2.2` и переменная `SERVER_URL`. Для Nexus подготовлен Ansible playbook под Ubuntu с образом `sonatype/nexus3:3.98.3`.
+На ВМ агента `cloud-init` скачал `jetbrains/teamcity-agent:2026.2.2` и запустил контейнер с переменной `SERVER_URL`. Подключение агента к серверу и его авторизация ожидают завершения настройки сервера.
+
+На ВМ Nexus выполнен [адаптированный Ansible playbook](infrastructure/nexus/site.yml). Он запускает `sonatype/nexus3:3.98.3` и проверяет HTTP 200 на локальном `/service/rest/v1/status`. Журнал последовательного порта подтвердил старт контейнера и завершение `cloud-init` без ошибки. Исходный playbook из задания рассчитан на CentOS и OpenJDK 8.
 
 [Исходный репозиторий задания](https://github.com/aragastmatb/example-teamcity)
 
 ## Проверки в работе
 
-Первичная настройка TeamCity, подключение агента и запуск Nexus, настройки Maven и TeamCity, сборки `master` и `feature/add_reply`, публикация JAR и проверка конфигурации в Git.
+Первичная настройка TeamCity, авторизация агента, настройка доступа Maven к Nexus, сборки `master` и `feature/add_reply`, публикация JAR и проверка конфигурации в Git.
 
 ## Скриншоты
 
