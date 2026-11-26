@@ -1,6 +1,6 @@
 # Домашнее задание «TeamCity»
 
-Отчёт в работе. Ниже перечислены проверенные результаты.
+Учебный проект собран в TeamCity. JAR опубликован в Nexus и доступен в Artifacts финальной сборки.
 
 ## Подготовка инфраструктуры
 
@@ -33,9 +33,19 @@ TeamCity инициализирован со встроенной базой HSQ
 
 Сборка №8 ветки `master` завершилась со статусом `Success`. Прошли 5 тестов. В Nexus появился Maven-компонент `org.netology:plaindoll:0.0.2`.
 
-## Оставшиеся проверки
+## Конфигурация в Git
 
-Перенос конфигурации TeamCity в Git, автоматическая сборка `feature/add_reply`, слияние в `master` и публикация JAR в разделе Artifacts сборки TeamCity.
+Экспорт проекта TeamCity сохранён в [`.teamcity/settings.kts`](.teamcity/settings.kts) и [`.teamcity/pom.xml`](.teamcity/pom.xml). Сверены Git-репозиторий и спецификация веток, VCS-триггер, условия Maven-шагов, путь к XML и правило артефактов `target/plaindoll-*.jar`. Временный шаг проверки Nexus удалён. Пароль остаётся на сервере. При импорте DSL укажите защищённый параметр проекта `nexus.publisher.password`. Файлы в форке сохранены как экспорт настроек, автоматическая синхронизация TeamCity с Git не включена.
+
+## Feature-ветка, слияние и артефакты
+
+В ветке `feature/add_reply` метод [`Welcomer.sayReply()`](src/main/java/plaindoll/Welcomer.java) возвращает реплику со словом `hunter`. [JUnit-тест](src/test/java/plaindoll/WelcomerTest.java) проверяет это слово. TeamCity автоматически запустил сборку после коммитов в ветку. Изменения вошли в `master` через [pull request №1](https://github.com/wwwsokol999-ui/example-teamcity/pull/1).
+
+| Сборка | Ветка | Результат |
+| --- | --- | --- |
+| №11 | `feature/add_reply` | Запуск от Git, `clean test`, 6 тестов прошли |
+| №12 | `master` после merge | `clean deploy`, 6 тестов прошли, в Artifacts 0 B |
+| №13 | `master` с правилом публикации | `clean deploy`, 6 тестов прошли, в Artifacts `plaindoll-0.0.2.jar` (3.08 KB) |
 
 ## Скриншоты
 
@@ -52,3 +62,18 @@ TeamCity инициализирован со встроенной базой HSQ
 Первая успешная сборка `master` на `netology-agent`.
 
 <img width="780" height="270" alt="clipboard" src="https://github.com/user-attachments/assets/d849c3d0-2544-44a0-9eed-cfffb67336bf" />
+
+
+Автоматическая сборка ветки `feature/add_reply`.
+
+<img width="845" height="260" alt="clipboard" src="https://github.com/user-attachments/assets/9b76ba64-7ac7-42e5-b9d9-ba6915392894" />
+
+
+Сборка после merge до настройки публикации JAR.
+
+<img width="812" height="305" alt="clipboard" src="https://github.com/user-attachments/assets/78331b75-466f-4383-a63f-d7b4d7f40e6d" />
+
+
+Финальная сборка master с опубликованным JAR.
+
+<img width="845" height="320" alt="clipboard" src="https://github.com/user-attachments/assets/1d030d6e-b5ab-436c-9045-ca6b1e7cdb44" />
